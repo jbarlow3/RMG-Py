@@ -44,8 +44,8 @@ from quantity import Quantity
 from data.base import Entry
 from data.kinetics import TemplateReaction, LibraryReaction
 from rmg.pdep import PDepReaction
-from rmgpy.pdep import LennardJones
 from rmgpy.molecule import Molecule
+from rmgpy.transport import TransportData
 
 __chemkin_reaction_count = None
     
@@ -589,7 +589,7 @@ def loadTransportFile(path, speciesDict):
                 label = line[0:16].upper().strip()
                 data = line[16:].split()
                 species = speciesDict[label]
-                species.lennardJones = LennardJones(
+                species.transportData = TransportData(
                     sigma = (float(data[2]),'angstrom'),
                     epsilon = (float(data[1]),'K'),
                 )
@@ -1092,6 +1092,11 @@ def writeThermoEntry(species, verbose = True):
 
 ################################################################################
 
+def writeTransportEntry(species, verbose = True):
+    ''
+    
+################################################################################
+
 def writeKineticsEntry(reaction, speciesList, verbose = True, javaLibrary = False):
     """
     Return a string representation of the reaction as used in a Chemkin
@@ -1335,8 +1340,8 @@ def saveTransportFile(path, species):
     """
     with open(path, 'w') as f:
         for spec in species:
-            print spec.lennardJones
-            if (not spec.lennardJones or not spec.dipoleMoment or
+            print spec.transportData
+            if (not spec.transportData or not spec.dipoleMoment or
                 not spec.polarizability or not spec.Zrot or 
                 len(spec.molecule) == 0):
                 continue
@@ -1354,8 +1359,8 @@ def saveTransportFile(path, species):
             f.write('{0:19} {1:d} {2:9.3f} {3:9.3f} {4:9.3f} {5:9.3f} {6:9.3f}\n'.format(
                 label,
                 shapeIndex,
-                spec.lennardJones.epsilon.value_si / constants.R,
-                spec.lennardJones.sigma.value_si * 1e10,
+                spec.transportData.epsilon.value_si / constants.R,
+                spec.transportData.sigma.value_si * 1e10,
                 spec.dipoleMoment.value_si * constants.c * 1e21,
                 spec.polarizability.value_si * 1e30,
                 spec.Zrot.value_si,
